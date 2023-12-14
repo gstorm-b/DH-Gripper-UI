@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui serialport serialbus
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -9,14 +9,19 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    dh-robotic/dhr_rgi.cpp \
     main.cpp \
-    mainwindow.cpp
+    mainwindow.cpp \
+    widget/serialsettingwidget.cpp
 
 HEADERS += \
-    mainwindow.h
+    dh-robotic/dhr_rgi.h \
+    mainwindow.h \
+    widget/serialsettingwidget.h
 
 FORMS += \
-    mainwindow.ui
+    mainwindow.ui \
+    widget/serialsettingwidget.ui
 
 TRANSLATIONS += \
     dh-gripper-ui_vi_VN.ts
