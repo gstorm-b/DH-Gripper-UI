@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include "dh-robotic/dhr_rgi.h"
+#include <QThread>
+#include "dh-robotic/dhcontroller.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -21,13 +22,12 @@ public:
 private:
   void InitAction();
 
-  void RgiInitialize();
+  void DhInitialize();
 
   void on_button_click_serial_connect();
 
 private:
   Ui::MainWindow *ui;
-  DHR_RGI *m_rgi_device;
-  bool gripstatic;
+  DHController *m_dh_controller;
 };
 #endif // MAINWINDOW_H

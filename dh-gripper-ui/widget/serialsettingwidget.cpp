@@ -114,6 +114,12 @@ SerialSetting SerialSettingWidget::GetSerialSetting() const {
   const auto flow_control = ui->combobox_flow_control->currentData();
   setting.flow_control = flow_control.value<QSerialPort::FlowControl>();
   setting.string_flow_control = ui->combobox_flow_control->currentText();
+  // RESPONSE TIME OUT
+  setting.response_timeout = ui->spinBox_response_time->value();
+  setting.string_response_timeout = QString::number(setting.response_timeout, 10);
+  // RESPONSE POLLS TIME
+  setting.polls_time = ui->spinBox_polls_time->value();
+  setting.string_polls_time = QString::number(setting.polls_time, 10);
   // LOCAL ECHO
 //  setting.string_flow_control = ui->combobox_local_echo->isChecked();
 

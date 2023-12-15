@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent)
   ui->setupUi(this);
 
   InitAction();
-  RgiInitialize();
+  DhInitialize();
 }
 
 MainWindow::~MainWindow()
@@ -20,59 +20,55 @@ void MainWindow::InitAction() {
   connect(ui->btn_connect, &QPushButton::clicked,
           this, &MainWindow::on_button_click_serial_connect);
 
-  gripstatic = true;
-  connect(ui->btn_test_read, &QPushButton::clicked,
-          this, [this] () {
-    if (gripstatic) {
-      m_rgi_device->RGI_CloseGrip();
-    } else {
-      m_rgi_device->RGI_OpenGrip();
-    }
-    gripstatic = !gripstatic;
+  connect(ui->btn_test_read, &QPushButton::clicked, this, [this] () {
+    ModbusFunc send_func;
+    send_func.code = FuncCode::kFuncWriteHoldingRegs;
+    send_func.slave_address = 1;
+    send_func.start_address = static_cast<int>(0x100);
+    send_func.amount = 3;
+    send_func.value.clear();
+    send_func.value.push_back(123);
+    send_func.value.push_back(278);
+    send_func.value.push_back(369);
+    m_dh_controller->DH_AddFuncToQueue(send_func);
   });
 }
 
-void MainWindow::RgiInitialize() {
-  m_rgi_device = new DHR_RGI(this);
-  m_rgi_device->RGI_SetSlaveAddress(1);
+void MainWindow::DhInitialize() {
+  m_dh_controller = new DHController(QThread::NormalPriority, this);
 
-  connect(m_rgi_device, &DHR_RGI::RGI_SignalConnected, this, [this] () {
+  connect(m_dh_controller, &DHController::DHSignal_Connected, this, [this] () {
     ui->statusbar->showMessage("Device connected.", 5000);
     ui->btn_connect->setText("Disconnect");
   });
 
-  connect(m_rgi_device, &DHR_RGI::RGI_SignalDisconnected, this, [this] () {
+  connect(m_dh_controller, &DHController::DHSignal_Disconnected, this, [this] () {
     ui->statusbar->showMessage("Device disconnected.", 5000);
     ui->btn_connect->setText("Connect");
   });
 
-  connect(m_rgi_device, &DHR_RGI::RGI_SignalConnecting, this, [this] () {
+  connect(m_dh_controller, &DHController::DHSignal_Connecting, this, [this] () {
     ui->statusbar->showMessage("Device connecting...");
     ui->btn_connect->setText("Connecting");
   });
 
-  connect(m_rgi_device, &DHR_RGI::RGI_SignalConnectInitFail,
-          this, [this] (QString msg) {
+  connect(m_dh_controller, &DHController::DHSignal_ConnectFail, this,
+          [this] (QString msg) {
     ui->statusbar->showMessage(msg, 5000);
     ui->btn_connect->setText("Connect");
   });
 
-  connect(m_rgi_device, &DHR_RGI::RGI_SignalConnectFail, this, [this] () {
-    ui->statusbar->showMessage("Device connect fail.", 5000);
-    ui->btn_connect->setText("Connect");
-  });
-
-  connect(m_rgi_device, &DHR_RGI::RGI_SignalError,
-          this, [this] (QString msg) {
+  connect(m_dh_controller, &DHController::DHSignal_ErrorOccured, this,
+          [this] (QString msg) {
     ui->statusbar->showMessage(msg, 5000);
   });
 }
 
 void MainWindow::on_button_click_serial_connect() {
-  if(!m_rgi_device->RGI_IsConnected()) {
+  if(!m_dh_controller->DH_IsConnected()) {
     SerialSetting setting = ui->WidgetSerialSetting->GetSerialSetting();
-    m_rgi_device->RGI_Connect(setting);
+    m_dh_controller->DH_Connect(setting);
   } else {
-    m_rgi_device->RGI_Disconnect();
+    m_dh_controller->DH_Disconnect();
   }
 }
