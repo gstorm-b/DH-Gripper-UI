@@ -23,6 +23,7 @@ private:
   void InitAction();
 
   void DhInitialize();
+  void DhDisplayRgiInfo(RGIData device_info);
 
   void on_button_click_serial_connect();
 

@@ -9,44 +9,16 @@
 
 #include "timer/TimeCounter.h"
 #include "widget/serialsettingwidget.h"
+#include "dhr_define.h"
+#include "dh_rgi.h"
 
-//#define RTU_RESPONSE_TIME         500
-#define RTU_NORMAL_REFRESH_TIME   100
-#define RTU_CONNECT_RETRIES_TIME  3
-#define RTU_NORMAL_SLAVE_ADDRESS  1
-#define MUTEX_LOCK_TIMEOUT        50
+#define RTU_NORMAL_REFRESH_TIME           200
+#define RTU_NORMAL_REFRESH_DISPLAY_TIME   500
+#define RTU_CONNECT_RETRIES_TIME          3
+#define RTU_NORMAL_SLAVE_ADDRESS          1
+#define MUTEX_LOCK_TIMEOUT                50
 
 namespace dhr {
-enum FuncCode : int {
-  kFuncReadHoldingRegs = 3,
-  kFuncWriteHoldingRegs = 10
-};
-
-enum ModbusUnitType : int {
-  kUnitCoils = 0,
-  kUnitInputCoils,
-  kUnitHoldingRegisters,
-  kUnitInputRegisters
-};
-
-struct ModbusFunc {
-  int slave_address = 1;
-  FuncCode code = FuncCode::kFuncReadHoldingRegs;
-  int start_address = 0;
-  int amount = 1;
-  QList<quint16> value;
-};
-
-struct ModbusRegister {
-  int address = 0;
-  quint16 value = 0;
-};
-
-struct ModbusFuncResponse {
-  int slave_address = 1;
-  ModbusUnitType type = ModbusUnitType::kUnitHoldingRegisters;
-  QList<ModbusRegister> value;
-};
 
 class DHController : public QThread
 {
@@ -59,8 +31,14 @@ public:
   void DH_Connect(SerialSetting setting);
   void DH_Disconnect();
   bool DH_IsConnected();
-
   void DH_AddFuncToQueue(ModbusFunc func);
+
+  void RGI_SetGripperPosition(int position);
+  void RGI_SetGripperForce(int force);
+  void RGI_SetGripperSpeed(int speed);
+  void RGI_SetRotationAngle(int angle);
+  void RGI_SetRotationTorque(int torque);
+  void RGI_SetRotationSpeed(int speed);
 
 private:
   void run() override;
@@ -70,14 +48,18 @@ private:
   void ModbusReadHodlingRegister(int slave_address, int start_address, int amount);
   void ModbusWriteHoldingRegister(int slave_address, int start_address,
                                   QList<quint16> write_list);
-  void ModbusHodlingRegsResponse(const QModbusDataUnit unit);
-
+  void ModbusHodlingRegsResponse(const int slave_address,
+                                 const QModbusDataUnit unit);
   void ModbusQueueClear();
   bool ModbusQueueIsEmpty();
   ModbusFunc ModbusQueueGetFront();
   void ModbusQueuePopFront();
-
   void ModbusQueueHandle();
+  void ModbusSendFunction(ModbusFunc func_code);
+
+  void RGI_Init();
+  void RGI_Collect_info();
+  void RGI_Uinit();
 
 signals:
   void DHSignal_Connected();
@@ -85,7 +67,7 @@ signals:
   void DHSignal_ConnectFail(QString msg);
   void DHSignal_Connecting();
   void DHSignal_ErrorOccured(QString msg);
-  void DHSignal_PollingTriggered();
+  void DHSignal_PollingTriggered(RGIData last_data);
 
 private:
   QThread::Priority thread_priority_;
@@ -93,10 +75,14 @@ private:
   QMutex mutex_;
   QModbusRtuSerialClient *modbus_device_;
   SerialSetting setting_connect_;
-  TimeCounter *time_counter_;
+  TimeCounter *refresh_time_counter_;
+  TimeCounter *display_time_counter_;
   bool is_modbus_connected_;
   int refresh_data_time_;
+  int refresh_display_time_;
   QList<ModbusFunc> send_func_queue_;
+  DH_RGI *device_rgi;
+  int device_gri_address_;
 };
 }
 

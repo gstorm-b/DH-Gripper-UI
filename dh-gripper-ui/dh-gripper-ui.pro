@@ -9,19 +9,25 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    dh-robotic/dh_rgi.cpp \
     dh-robotic/dhcontroller.cpp \
+    dh-robotic/dhrgiwidget.cpp \
     main.cpp \
     mainwindow.cpp \
     timer/TimeCounter.cpp \
     widget/serialsettingwidget.cpp
 
 HEADERS += \
+    dh-robotic/dh_rgi.h \
     dh-robotic/dhcontroller.h \
+    dh-robotic/dhr_define.h \
+    dh-robotic/dhrgiwidget.h \
     mainwindow.h \
     timer/TimeCounter.h \
     widget/serialsettingwidget.h
 
 FORMS += \
+    dh-robotic/dhrgiwidget.ui \
     mainwindow.ui \
     widget/serialsettingwidget.ui
 

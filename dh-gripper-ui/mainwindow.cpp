@@ -9,6 +9,16 @@ MainWindow::MainWindow(QWidget *parent)
 
   InitAction();
   DhInitialize();
+
+//  DhInitState init_state =
+//      static_cast<DhInitState>(static_cast<quint16>(1));
+//  DhGripperStatus gripper_status =
+//      static_cast<DhGripperStatus>(static_cast<quint16>(1));
+//  DhRotationStatus rotation_status =
+//      static_cast<DhRotationStatus>(static_cast<quint16>(1));
+//  qDebug() << dhr::EnumConvert(init_state);
+//  qDebug() << dhr::EnumConvert(gripper_status);
+//  qDebug() << dhr::EnumConvert(rotation_status);
 }
 
 MainWindow::~MainWindow()
@@ -22,14 +32,10 @@ void MainWindow::InitAction() {
 
   connect(ui->btn_test_read, &QPushButton::clicked, this, [this] () {
     ModbusFunc send_func;
-    send_func.code = FuncCode::kFuncWriteHoldingRegs;
+    send_func.func_code = FuncCode::kFuncReadHoldingRegs;
     send_func.slave_address = 1;
-    send_func.start_address = static_cast<int>(0x100);
-    send_func.amount = 3;
-    send_func.value.clear();
-    send_func.value.push_back(123);
-    send_func.value.push_back(278);
-    send_func.value.push_back(369);
+    send_func.start_address = static_cast<int>(0x200);
+    send_func.amount = static_cast<int>(0x18);
     m_dh_controller->DH_AddFuncToQueue(send_func);
   });
 }
@@ -62,6 +68,43 @@ void MainWindow::DhInitialize() {
           [this] (QString msg) {
     ui->statusbar->showMessage(msg, 5000);
   });
+
+  connect(m_dh_controller, &DHController::DHSignal_PollingTriggered,
+          this, &MainWindow::DhDisplayRgiInfo);
+
+  connect(ui->widgetRgiDevice, &DhRgiWidget::SignalsGripper_PositionEdited,
+          this, [this] (int value) {
+    m_dh_controller->RGI_SetGripperPosition(value);
+  });
+
+  connect(ui->widgetRgiDevice, &DhRgiWidget::SignalsGripper_ForceEdited,
+          this, [this] (int value) {
+    m_dh_controller->RGI_SetGripperForce(value);
+  });
+
+  connect(ui->widgetRgiDevice, &DhRgiWidget::SignalsGripper_SpeedEdited,
+          this, [this] (int value) {
+    m_dh_controller->RGI_SetGripperSpeed(value);
+  });
+
+  connect(ui->widgetRgiDevice, &DhRgiWidget::SignalsRotation_AngleEdited,
+          this, [this] (int value) {
+    m_dh_controller->RGI_SetRotationAngle(value);
+  });
+
+  connect(ui->widgetRgiDevice, &DhRgiWidget::SignalsRotation_TorqueEdited,
+          this, [this] (int value) {
+    m_dh_controller->RGI_SetRotationTorque(value);
+  });
+
+  connect(ui->widgetRgiDevice, &DhRgiWidget::SignalsRotation_SpeedEdited,
+          this, [this] (int value) {
+    m_dh_controller->RGI_SetRotationSpeed(value);
+  });
+}
+
+void MainWindow::DhDisplayRgiInfo(RGIData device_info) {
+  ui->widgetRgiDevice->ShowRgiDeviceInfo(device_info.feedback);
 }
 
 void MainWindow::on_button_click_serial_connect() {
