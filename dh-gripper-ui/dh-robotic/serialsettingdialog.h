@@ -1,7 +1,7 @@
-#ifndef SERIALSETTINGWIDGET_H
-#define SERIALSETTINGWIDGET_H
+#ifndef SERIALSETTINGDIALOG_H
+#define SERIALSETTINGDIALOG_H
 
-#include <QWidget>
+#include <QDialog>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
@@ -28,29 +28,31 @@ struct SerialSetting
 };
 
 namespace Ui {
-class SerialSettingWidget;
+class SerialSettingDialog;
 }
 
-class SerialSettingWidget : public QWidget
+class SerialSettingDialog : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit SerialSettingWidget(QWidget *parent = nullptr);
-  ~SerialSettingWidget();
+  explicit SerialSettingDialog(QWidget *parent = nullptr);
+  ~SerialSettingDialog();
 
+  void ShowDialog();
   SerialSetting GetSerialSetting() const;
 
 private:
   void InitActions();
-
-private:
-  Ui::SerialSettingWidget *ui;
-
   void FillPortParameter();
   void FillAvailablePort();
   void DisplayPortInfo(int index);
 
+signals:
+  void UserAcceptSerialSetting(SerialSetting setting);
+
+private:
+  Ui::SerialSettingDialog *ui;
 };
 
-#endif // SERIALSETTINGWIDGET_H
+#endif // SERIALSETTINGDIALOG_H

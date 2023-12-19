@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QThread>
 #include "dh-robotic/dhcontroller.h"
+#include "dh-robotic/serialsettingdialog.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }

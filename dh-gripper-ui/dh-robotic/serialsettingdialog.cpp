@@ -1,23 +1,28 @@
-#include "serialsettingwidget.h"
-#include "ui_serialsettingwidget.h"
+#include "serialsettingdialog.h"
+#include "ui_serialsettingdialog.h"
 
-SerialSettingWidget::SerialSettingWidget(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::SerialSettingWidget)
+SerialSettingDialog::SerialSettingDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::SerialSettingDialog)
 {
   ui->setupUi(this);
 
   InitActions();
-  FillPortParameter();
-  FillAvailablePort();
 }
 
-SerialSettingWidget::~SerialSettingWidget()
+SerialSettingDialog::~SerialSettingDialog()
 {
   delete ui;
 }
 
-SerialSetting SerialSettingWidget::GetSerialSetting() const {
+void SerialSettingDialog::ShowDialog() {
+  FillPortParameter();
+  FillAvailablePort();
+  setModal(true);
+  show();
+}
+
+SerialSetting SerialSettingDialog::GetSerialSetting() const {
   SerialSetting setting;
   // NAME
   setting.name = ui->combobox_serial_port_info->currentText();
@@ -53,14 +58,19 @@ SerialSetting SerialSettingWidget::GetSerialSetting() const {
   return setting;
 }
 
-void SerialSettingWidget::InitActions() {
+void SerialSettingDialog::InitActions() {
   connect(ui->button_refresh, &QPushButton::clicked,
-          this, &SerialSettingWidget::FillAvailablePort);
+          this, &SerialSettingDialog::FillAvailablePort);
   connect(ui->combobox_serial_port_info, &QComboBox::currentIndexChanged,
-          this, &SerialSettingWidget::DisplayPortInfo);
+          this, &SerialSettingDialog::DisplayPortInfo);
+  connect(this, &SerialSettingDialog::accepted, this, [this] () {
+    emit UserAcceptSerialSetting(GetSerialSetting());
+  });
+  connect(this, &SerialSettingDialog::finished,
+          this, &SerialSettingDialog::deleteLater);
 }
 
-void SerialSettingWidget::FillPortParameter() {
+void SerialSettingDialog::FillPortParameter() {
   ui->combobox_baudrate->addItem(QStringLiteral("9600"), QSerialPort::Baud9600);
   ui->combobox_baudrate->addItem(QStringLiteral("19200"), QSerialPort::Baud19200);
   ui->combobox_baudrate->addItem(QStringLiteral("38400"), QSerialPort::Baud38400);
@@ -90,7 +100,7 @@ void SerialSettingWidget::FillPortParameter() {
   ui->combobox_flow_control->setCurrentIndex(0);
 }
 
-void SerialSettingWidget::FillAvailablePort() {
+void SerialSettingDialog::FillAvailablePort() {
   ui->combobox_serial_port_info->clear();
   const QString blank_string = tr(::BlankString);
   const auto infos = QSerialPortInfo::availablePorts();
@@ -114,7 +124,7 @@ void SerialSettingWidget::FillAvailablePort() {
   }
 }
 
-void SerialSettingWidget::DisplayPortInfo(int index) {
+void SerialSettingDialog::DisplayPortInfo(int index) {
   if (index <= -1)
     return;
 
@@ -128,4 +138,3 @@ void SerialSettingWidget::DisplayPortInfo(int index) {
   ui->label_vendor_id->setText(tr("Vendor Identifier: %1").arg(list.value(5, blank_string)));
   ui->label_product_id->setText(tr("Product Identifier: %1").arg(list.value(6, blank_string)));
 }
-

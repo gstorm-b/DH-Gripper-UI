@@ -12,24 +12,24 @@ SOURCES += \
     dh-robotic/dh_rgi.cpp \
     dh-robotic/dhcontroller.cpp \
     dh-robotic/dhrgiwidget.cpp \
+    dh-robotic/serialsettingdialog.cpp \
     main.cpp \
     mainwindow.cpp \
-    timer/TimeCounter.cpp \
-    widget/serialsettingwidget.cpp
+    timer/TimeCounter.cpp
 
 HEADERS += \
     dh-robotic/dh_rgi.h \
     dh-robotic/dhcontroller.h \
     dh-robotic/dhr_define.h \
     dh-robotic/dhrgiwidget.h \
+    dh-robotic/serialsettingdialog.h \
     mainwindow.h \
-    timer/TimeCounter.h \
-    widget/serialsettingwidget.h
+    timer/TimeCounter.h
 
 FORMS += \
     dh-robotic/dhrgiwidget.ui \
-    mainwindow.ui \
-    widget/serialsettingwidget.ui
+    dh-robotic/serialsettingdialog.ui \
+    mainwindow.ui
 
 TRANSLATIONS += \
     dh-gripper-ui_vi_VN.ts

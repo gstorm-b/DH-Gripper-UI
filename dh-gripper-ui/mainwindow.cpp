@@ -108,11 +108,15 @@ void MainWindow::DhDisplayRgiInfo(RGIData device_info) {
 
 void MainWindow::on_button_click_serial_connect() {
   if(!m_dh_controller->DH_IsConnected()) {
-    SerialSetting setting = ui->WidgetSerialSetting->GetSerialSetting();
-    m_rgi_address = ui->widgetRgiDevice->GetSlaveAddress();
-    ui->widgetRgiDevice->SetSlaveEditBoxEnable(false);
-    ui->btn_connect->setEnabled(false);
-    m_dh_controller->DH_Connect(setting);
+    SerialSettingDialog *serial_dialog = new SerialSettingDialog(this);
+    connect(serial_dialog, &SerialSettingDialog::UserAcceptSerialSetting,
+            this, [this] (SerialSetting setting) {
+      m_rgi_address = ui->widgetRgiDevice->GetSlaveAddress();
+      ui->widgetRgiDevice->SetSlaveEditBoxEnable(false);
+      ui->btn_connect->setEnabled(false);
+      m_dh_controller->DH_Connect(setting);
+    });
+    serial_dialog->ShowDialog();
   } else {
     m_dh_controller->DH_Disconnect();
   }

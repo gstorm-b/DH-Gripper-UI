@@ -8,7 +8,7 @@
 #include <QMutex>
 
 #include "timer/TimeCounter.h"
-#include "widget/serialsettingwidget.h"
+#include "serialsettingdialog.h"
 #include "dhr_define.h"
 #include "dh_rgi.h"
 

@@ -52,9 +52,6 @@
      </layout>
     </item>
     <item row="0" column="1">
-     <widget class="SerialSettingWidget" name="WidgetSerialSetting" native="true"/>
-    </item>
-    <item row="1" column="1">
      <widget class="DhRgiWidget" name="widgetRgiDevice" native="true"/>
     </item>
    </layout>
@@ -72,12 +69,6 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>SerialSettingWidget</class>
-   <extends>QWidget</extends>
-   <header>widget/serialsettingwidget.h</header>
-   <container>1</container>
-  </customwidget>
   <customwidget>
    <class>DhRgiWidget</class>
    <extends>QWidget</extends>
