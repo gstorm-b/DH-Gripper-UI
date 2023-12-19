@@ -6,6 +6,7 @@ DHController::DHController(QThread::Priority priority, QObject *parent)
   thread_priority_ = priority;
   thread_running_ = false;
   is_modbus_connected_ = false;
+  disconnect_wait_ = false;
   refresh_data_time_ = RTU_NORMAL_REFRESH_TIME;
   refresh_display_time_ = RTU_NORMAL_REFRESH_DISPLAY_TIME;
 }
@@ -17,7 +18,7 @@ DHController::~DHController() {
 }
 
 void DHController::DH_Connect(SerialSetting setting) {
-  mutex_.tryLock(MUTEX_LOCK_TIMEOUT);
+  mutex_.tryLock(MUTEX_LOCK_TIMEOUT); 
   if(!thread_running_) {
     setting_connect_ = setting;
     thread_running_ = true;
@@ -29,15 +30,16 @@ void DHController::DH_Connect(SerialSetting setting) {
 void DHController::DH_Disconnect() {
   mutex_.tryLock(MUTEX_LOCK_TIMEOUT);
   if (thread_running_) {
-    thread_running_ = false;
-    quit();
-    wait();
+    disconnect_wait_ = true;
   }
   mutex_.unlock();
 }
 
 bool DHController::DH_IsConnected() {
-  return is_modbus_connected_;
+  mutex_.tryLock(MUTEX_LOCK_TIMEOUT);
+  bool is_connected = is_modbus_connected_;
+  mutex_.unlock();
+  return is_connected;
 }
 
 void DHController::DH_AddFuncToQueue(ModbusFunc func) {
@@ -46,28 +48,8 @@ void DHController::DH_AddFuncToQueue(ModbusFunc func) {
   mutex_.unlock();
 }
 
-void DHController::RGI_SetGripperPosition(int position) {
-  DH_AddFuncToQueue(device_rgi->SetGripperPosition(position));
-}
-
-void DHController::RGI_SetGripperForce(int force) {
-  DH_AddFuncToQueue(device_rgi->SetGripperForce(force));
-}
-
-void DHController::RGI_SetGripperSpeed(int speed) {
-  DH_AddFuncToQueue(device_rgi->SetGripperSpeed(speed));
-}
-
-void DHController::RGI_SetRotationAngle(int angle) {
-  DH_AddFuncToQueue(device_rgi->SetRotationAngle(angle));
-}
-
-void DHController::RGI_SetRotationTorque(int torque) {
-  DH_AddFuncToQueue(device_rgi->SetRotationTorque(torque));
-}
-
-void DHController::RGI_SetRotationSpeed(int speed) {
-  DH_AddFuncToQueue(device_rgi->SetRotationSpeed(speed));
+void DHController::DH_SetRgiAddress(int address) {
+  device_gri_address_ = address;
 }
 
 void DHController::run() {
@@ -77,13 +59,22 @@ void DHController::run() {
   if(modbus_device_->state() != QModbusDevice::ConnectedState) {
     return;
   }
-
-  refresh_time_counter_ = new TimeCounter;
-  display_time_counter_ = new TimeCounter;
+  // init objects and emit connected signals;
   ModbusQueueClear();
   RGI_Init();
+  refresh_time_counter_ = new TimeCounter;
+  display_time_counter_ = new TimeCounter;
+  is_modbus_connected_ = true;
+  emit DHSignal_Connected();
 
   while (thread_running_) {
+    // disconnect flag
+    if(disconnect_wait_) {
+      thread_running_ = false;
+      disconnect_wait_ = false;
+      break;
+    }
+
     // polling data read
     if (refresh_time_counter_->StartTimeCounter(refresh_data_time_)) {
       RGI_Collect_info();
@@ -133,14 +124,11 @@ void DHController::ModbusInit() {
 
 void DHController::ModbusChangedState(QModbusDevice::State state) {
   switch (state) {
-    case QModbusDevice::State::ConnectedState:
-      is_modbus_connected_ = true;
-      emit DHSignal_Connected();
-      break;
+//    case QModbusDevice::State::ConnectedState:
+//      is_modbus_connected_ = true;
+//      emit DHSignal_Connected();
+//      break;
     case QModbusDevice::State::UnconnectedState:
-//      if(!is_modbus_connected_) {
-//        return;
-//      }
       is_modbus_connected_ = false;
       emit DHSignal_Disconnected();
       break;
@@ -176,6 +164,7 @@ void DHController::ModbusErrorHandle(QModbusDevice::Error error) {
       break;
   }
   if(!message.isEmpty()) {
+    disconnect_wait_ = true;
     emit DHSignal_ErrorOccured(message);
   }
 }
@@ -206,7 +195,7 @@ void DHController::ModbusReadHodlingRegister(int slave_address,
           ModbusHodlingRegsResponse(reply->serverAddress(), reply->result());
         }
         reply->deleteLater();
-        this->quit();
+        this->exit();
       });
       this->exec();
     } else {
@@ -248,7 +237,7 @@ void DHController::ModbusWriteHoldingRegister(int slave_address,
           ModbusHodlingRegsResponse(reply->serverAddress(), reply->result());
         }
         reply->deleteLater();
-        this->quit();
+        this->exit();
       });
       this->exec();
     }
@@ -327,8 +316,6 @@ void DHController::ModbusSendFunction(ModbusFunc func_code) {
 void DHController::RGI_Init() {
   device_gri_address_ = 1;
   device_rgi = new DH_RGI(device_gri_address_);
-  DH_AddFuncToQueue(device_rgi->SetInitDevice());
-  DH_AddFuncToQueue(device_rgi->GetDeviceFeedbackInfo());
 }
 
 void DHController::RGI_Collect_info() {

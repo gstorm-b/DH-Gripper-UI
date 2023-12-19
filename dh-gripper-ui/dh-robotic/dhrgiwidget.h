@@ -21,11 +21,15 @@ public:
 
   void ShowRgiDeviceSetParameters(RGIData::RGIFeedback feedback_data);
   void ShowRgiDeviceInfo(RGIData::RGIFeedback feedback_data);
+  bool IsAutoInit();
+  int GetSlaveAddress();
+  void SetSlaveEditBoxEnable(bool is_enable);
 
 private:
-  void InitSignals();
+  void InitActions();
 
 signals:
+  void SignalsRgiInitialize();
   void SignalsGripper_PositionEdited(int position);
   void SignalsGripper_ForceEdited(int force);
   void SignalsGripper_SpeedEdited(int speed);

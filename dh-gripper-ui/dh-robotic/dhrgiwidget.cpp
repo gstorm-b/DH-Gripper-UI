@@ -6,7 +6,7 @@ DhRgiWidget::DhRgiWidget(QWidget *parent) :
     ui(new Ui::DhRgiWidget)
 {
   ui->setupUi(this);
-  InitSignals();
+  InitActions();
 }
 
 DhRgiWidget::~DhRgiWidget()
@@ -41,10 +41,41 @@ void DhRgiWidget::ShowRgiDeviceInfo(RGIData::RGIFeedback feedback_data) {
       "Current angle: " + QString::number(feedback_data.rotation_angle));
 }
 
-void DhRgiWidget::InitSignals() {
+bool DhRgiWidget::IsAutoInit() {
+  return ui->checkBox_auto_initialize->isChecked();
+}
+
+int DhRgiWidget::GetSlaveAddress() {
+  return ui->spinBox_rgi_address->value();
+}
+
+void DhRgiWidget::SetSlaveEditBoxEnable(bool is_enable) {
+  ui->spinBox_rgi_address->setEnabled(is_enable);
+}
+
+void DhRgiWidget::InitActions() {
+  connect(ui->btn_initialize, &QPushButton::clicked, this, [this] () {
+    emit SignalsRgiInitialize();
+  });
+
   connect(ui->doubleSpinBox_gipper_position, &QDoubleSpinBox::editingFinished,
           this, [this] () {
     int value = ui->doubleSpinBox_gipper_position->value() * 10;
+    emit SignalsGripper_PositionEdited(value);
+  });
+
+  connect(ui->btn_gripper_test_1, &QPushButton::clicked, this, [this] () {
+    int value = ui->doubleSpinBox_gipper_test_1->value() * 10;
+    emit SignalsGripper_PositionEdited(value);
+  });
+
+  connect(ui->btn_gripper_test_2, &QPushButton::clicked, this, [this] () {
+    int value = ui->doubleSpinBox_gipper_test_2->value() * 10;
+    emit SignalsGripper_PositionEdited(value);
+  });
+
+  connect(ui->btn_gripper_test_3, &QPushButton::clicked, this, [this] () {
+    int value = ui->doubleSpinBox_gipper_test_3->value() * 10;
     emit SignalsGripper_PositionEdited(value);
   });
 
@@ -61,6 +92,18 @@ void DhRgiWidget::InitSignals() {
   connect(ui->spinBox_rotation_angle, &QSpinBox::editingFinished,
           this, [this] () {
     emit SignalsRotation_AngleEdited(ui->spinBox_rotation_angle->value());
+  });
+
+  connect(ui->btn_rotation_test_1, &QPushButton::clicked, this, [this] () {
+    emit SignalsRotation_AngleEdited(ui->spinBox_rotation_test_1->value());
+  });
+
+  connect(ui->btn_rotation_test_2, &QPushButton::clicked, this, [this] () {
+    emit SignalsRotation_AngleEdited(ui->spinBox_rotation_test_2->value());
+  });
+
+  connect(ui->btn_rotation_test_3, &QPushButton::clicked, this, [this] () {
+    emit SignalsRotation_AngleEdited(ui->spinBox_rotation_test_3->value());
   });
 
   connect(ui->spinBox_rotation_torque, &QSpinBox::editingFinished,

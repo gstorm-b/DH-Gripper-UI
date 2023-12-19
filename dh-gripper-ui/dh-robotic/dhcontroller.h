@@ -32,13 +32,7 @@ public:
   void DH_Disconnect();
   bool DH_IsConnected();
   void DH_AddFuncToQueue(ModbusFunc func);
-
-  void RGI_SetGripperPosition(int position);
-  void RGI_SetGripperForce(int force);
-  void RGI_SetGripperSpeed(int speed);
-  void RGI_SetRotationAngle(int angle);
-  void RGI_SetRotationTorque(int torque);
-  void RGI_SetRotationSpeed(int speed);
+  void DH_SetRgiAddress(int address);
 
 private:
   void run() override;
@@ -72,6 +66,7 @@ signals:
 private:
   QThread::Priority thread_priority_;
   bool thread_running_;
+  bool disconnect_wait_;
   QMutex mutex_;
   QModbusRtuSerialClient *modbus_device_;
   SerialSetting setting_connect_;

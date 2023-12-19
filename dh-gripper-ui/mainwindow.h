@@ -30,5 +30,6 @@ private:
 private:
   Ui::MainWindow *ui;
   DHController *m_dh_controller;
+  int m_rgi_address;
 };
 #endif // MAINWINDOW_H

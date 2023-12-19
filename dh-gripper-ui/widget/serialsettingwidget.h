@@ -42,11 +42,15 @@ public:
   SerialSetting GetSerialSetting() const;
 
 private:
+  void InitActions();
+
+private:
   Ui::SerialSettingWidget *ui;
 
   void FillPortParameter();
   void FillAvailablePort();
   void DisplayPortInfo(int index);
+
 };
 
 #endif // SERIALSETTINGWIDGET_H

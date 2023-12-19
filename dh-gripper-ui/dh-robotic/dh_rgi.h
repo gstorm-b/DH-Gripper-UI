@@ -69,15 +69,22 @@ public:
   ModbusFunc SetGripperPosition(int position);
   ModbusFunc SetGripperForce(int force);
   ModbusFunc SetGripperSpeed(int speed);
-
   ModbusFunc SetRotationAngle(int angle);
   ModbusFunc SetRotationTorque(int torque);
   ModbusFunc SetRotationSpeed(int speed);
 
+  static ModbusFunc GetDeviceFeedbackInfo(int slave_address);
+  static ModbusFunc SetInitDevice(int slave_address);
+  static ModbusFunc SetGripperPosition(int slave_address, int position);
+  static ModbusFunc SetGripperForce(int slave_address, int force);
+  static ModbusFunc SetGripperSpeed(int slave_address, int speed);
+  static ModbusFunc SetRotationAngle(int slave_address, int angle);
+  static ModbusFunc SetRotationTorque(int slave_address, int torque);
+  static ModbusFunc SetRotationSpeed(int slave_address, int speed);
+
 private:
   void InitDataMap();
   void ConvertFeedbackData(RGIData &rgi_info);
-  void PushSingleValue(QList<quint16> &container, quint16 value);
 
 public:
   int slave_address_;

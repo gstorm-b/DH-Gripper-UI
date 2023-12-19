@@ -37,13 +37,6 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="btn_test_read">
-        <property name="text">
-         <string>Test read</string>
-        </property>
-       </widget>
-      </item>
-      <item>
        <spacer name="verticalSpacer">
         <property name="orientation">
          <enum>Qt::Vertical</enum>

@@ -7,11 +7,7 @@ SerialSettingWidget::SerialSettingWidget(QWidget *parent) :
 {
   ui->setupUi(this);
 
-  connect(ui->button_refresh, &QPushButton::clicked,
-          this, &SerialSettingWidget::FillAvailablePort);
-  connect(ui->combobox_serial_port_info, &QComboBox::currentIndexChanged,
-          this, &SerialSettingWidget::DisplayPortInfo);
-
+  InitActions();
   FillPortParameter();
   FillAvailablePort();
 }
@@ -19,6 +15,49 @@ SerialSettingWidget::SerialSettingWidget(QWidget *parent) :
 SerialSettingWidget::~SerialSettingWidget()
 {
   delete ui;
+}
+
+SerialSetting SerialSettingWidget::GetSerialSetting() const {
+  SerialSetting setting;
+  // NAME
+  setting.name = ui->combobox_serial_port_info->currentText();
+  // BAUDRATE
+  const auto baudrate = ui->combobox_baudrate->currentData();
+  setting.baudrate = baudrate.value<QSerialPort::BaudRate>();
+  setting.string_baudrate = QString::number(setting.baudrate);
+  // DATE BITS
+  const auto data_bits = ui->combobox_data_bits->currentData();
+  setting.data_bits = data_bits.value<QSerialPort::DataBits>();
+  setting.string_data_bits = ui->combobox_data_bits->currentText();
+  // PARITY BIT
+  const auto parity = ui->combobox_parity->currentData();
+  setting.parity = parity.value<QSerialPort::Parity>();
+  setting.string_parity = ui->combobox_parity->currentText();
+  // STOP BITS
+  const auto stop_bits = ui->combobox_stop_bits->currentData();
+  setting.stop_bits = stop_bits.value<QSerialPort::StopBits>();
+  setting.string_stop_bits = ui->combobox_stop_bits->currentText();
+  // FLOW CONTROL
+  const auto flow_control = ui->combobox_flow_control->currentData();
+  setting.flow_control = flow_control.value<QSerialPort::FlowControl>();
+  setting.string_flow_control = ui->combobox_flow_control->currentText();
+  // RESPONSE TIME OUT
+  setting.response_timeout = ui->spinBox_response_time->value();
+  setting.string_response_timeout = QString::number(setting.response_timeout, 10);
+  // RESPONSE POLLS TIME
+  setting.polls_time = ui->spinBox_polls_time->value();
+  setting.string_polls_time = QString::number(setting.polls_time, 10);
+  // LOCAL ECHO
+  //  setting.string_flow_control = ui->combobox_local_echo->isChecked();
+
+  return setting;
+}
+
+void SerialSettingWidget::InitActions() {
+  connect(ui->button_refresh, &QPushButton::clicked,
+          this, &SerialSettingWidget::FillAvailablePort);
+  connect(ui->combobox_serial_port_info, &QComboBox::currentIndexChanged,
+          this, &SerialSettingWidget::DisplayPortInfo);
 }
 
 void SerialSettingWidget::FillPortParameter() {
@@ -90,38 +129,3 @@ void SerialSettingWidget::DisplayPortInfo(int index) {
   ui->label_product_id->setText(tr("Product Identifier: %1").arg(list.value(6, blank_string)));
 }
 
-SerialSetting SerialSettingWidget::GetSerialSetting() const {
-  SerialSetting setting;
-  // NAME
-  setting.name = ui->combobox_serial_port_info->currentText();
-  // BAUDRATE
-  const auto baudrate = ui->combobox_baudrate->currentData();
-  setting.baudrate = baudrate.value<QSerialPort::BaudRate>();
-  setting.string_baudrate = QString::number(setting.baudrate);
-  // DATE BITS
-  const auto data_bits = ui->combobox_data_bits->currentData();
-  setting.data_bits = data_bits.value<QSerialPort::DataBits>();
-  setting.string_data_bits = ui->combobox_data_bits->currentText();
-  // PARITY BIT
-  const auto parity = ui->combobox_parity->currentData();
-  setting.parity = parity.value<QSerialPort::Parity>();
-  setting.string_parity = ui->combobox_parity->currentText();
-  // STOP BITS
-  const auto stop_bits = ui->combobox_stop_bits->currentData();
-  setting.stop_bits = stop_bits.value<QSerialPort::StopBits>();
-  setting.string_stop_bits = ui->combobox_stop_bits->currentText();
-  // FLOW CONTROL
-  const auto flow_control = ui->combobox_flow_control->currentData();
-  setting.flow_control = flow_control.value<QSerialPort::FlowControl>();
-  setting.string_flow_control = ui->combobox_flow_control->currentText();
-  // RESPONSE TIME OUT
-  setting.response_timeout = ui->spinBox_response_time->value();
-  setting.string_response_timeout = QString::number(setting.response_timeout, 10);
-  // RESPONSE POLLS TIME
-  setting.polls_time = ui->spinBox_polls_time->value();
-  setting.string_polls_time = QString::number(setting.polls_time, 10);
-  // LOCAL ECHO
-//  setting.string_flow_control = ui->combobox_local_echo->isChecked();
-
-  return setting;
-}
