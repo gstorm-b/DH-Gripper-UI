@@ -2,7 +2,8 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QThread>
+#include <QCloseEvent>
+#include <QMessageBox>
 #include "dh-robotic/dhcontroller.h"
 #include "dh-robotic/serialsettingdialog.h"
 
@@ -21,16 +22,20 @@ public:
   ~MainWindow();
 
 private:
+  void closeEvent(QCloseEvent *event) override;
   void InitAction();
 
   void DhInitialize();
-  void DhDisplayRgiInfo(RGIData device_info);
+  void DhDisplayDeviceInfo();
 
   void on_button_click_serial_connect();
 
 private:
   Ui::MainWindow *ui;
   DHController *m_dh_controller;
-  int m_rgi_address;
+  int m_rgi_address = 2;
+  int m_pgc_address = 1;
+
+  int test_counter = 0;
 };
 #endif // MAINWINDOW_H

@@ -11,6 +11,7 @@
 #include "serialsettingdialog.h"
 #include "dhr_define.h"
 #include "dh_rgi.h"
+#include "dh_pgc.h"
 
 #define RTU_NORMAL_REFRESH_TIME           200
 #define RTU_NORMAL_REFRESH_DISPLAY_TIME   500
@@ -33,6 +34,10 @@ public:
   bool DH_IsConnected();
   void DH_AddFuncToQueue(ModbusFunc func);
   void DH_SetRgiAddress(int address);
+  void DH_SetPgcAddress(int address);
+
+  bool DH_GetRgiData(int address, RGIData &device);
+  bool DH_GetPgcData(int address, PGCData &device);
 
 private:
   void run() override;
@@ -51,9 +56,9 @@ private:
   void ModbusQueueHandle();
   void ModbusSendFunction(ModbusFunc func_code);
 
-  void RGI_Init();
-  void RGI_Collect_info();
-  void RGI_Uinit();
+  bool DhDeviceInit();
+  void DhDeviceCollectInfo();
+  void DHDeviceUinit();
 
 signals:
   void DHSignal_Connected();
@@ -61,7 +66,11 @@ signals:
   void DHSignal_ConnectFail(QString msg);
   void DHSignal_Connecting();
   void DHSignal_ErrorOccured(QString msg);
-  void DHSignal_PollingTriggered(RGIData last_data);
+  void DHSignal_PollingTriggered();
+  void DHSignal_PollingDisplayTriggered();
+  void DHSignal_PgcGripperStateChanged(DhGripperStatus state);
+  void DHSignal_RgiGripperStateChanged(DhGripperStatus state);
+  void DHSignal_RgiRotateStateChanged(DhRotationStatus state);
 
 private:
   QThread::Priority thread_priority_;
@@ -77,7 +86,9 @@ private:
   int refresh_display_time_;
   QList<ModbusFunc> send_func_queue_;
   DH_RGI *device_rgi;
-  int device_gri_address_;
+  int device_rgi_address_;
+  DH_PGC *device_pgc;
+  int device_pgc_address_;
 };
 }
 
